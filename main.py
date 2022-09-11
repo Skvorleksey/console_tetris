@@ -58,8 +58,19 @@ class Tetris:
         elif self.x + len(self.current_shape[0]) > self.ground_width:
             self.x = self.ground_width - len(self.current_shape[0])
 
+        # check stack collisions
+        if self.is_touch_stack():
+            for y, line in enumerate(self.current_shape):
+                for x, cell in enumerate(line):
+                    if cell != ' ':
+                        self.stack[self.y + y][self.x + x] = cell
+
+            self.y = 0
+            self.x = 0
+            self.current_shape = random.choice(shapes.shapes)
+
         # check bottom collision
-        if self.y + len(self.current_shape) >= self.ground_height + 1:
+        elif self.y + len(self.current_shape) >= self.ground_height + 1:
             for y, line in enumerate(self.current_shape):
                 for x, cell in enumerate(line):
                     if cell != ' ':
@@ -68,6 +79,30 @@ class Tetris:
             self.y = 0
             self.x = 0
             self.current_shape = random.choice(shapes.shapes)
+
+        # check completed lines
+        for line in self.stack:
+            if line == ['#'] * self.ground_width:
+                self.stack.remove(line)
+                self.stack.insert(0, [' '] * self.ground_width)
+
+
+    def is_touch_stack(self):
+        col_range = [i + self.x for i in range(len(self.current_shape[0]))]
+        for col in col_range:
+            if self.get_highest_stack_point(col) - self.get_lowest_shape_point(col) == 1:
+                return True
+
+    def get_highest_stack_point(self, col):
+        for row, line in enumerate(self.stack):
+            if line[col] != ' ':
+                return row
+        return -1
+
+    def get_lowest_shape_point(self, col):
+        for i in range(len(self.current_shape) - 1, -1, -1):
+            if self.current_shape[i][col-self.x] != ' ':
+                return i + self.y
 
 
 
