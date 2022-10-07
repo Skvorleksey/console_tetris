@@ -1,15 +1,27 @@
 import msvcrt
 import time
+from typing import Union
 
 from shape import Shape
 
 
+def greeting() -> None:
+    print("Welcome to tetris game!\n")
+
+
 class Tetris:
-    def __init__(self):
+    """Main class of the game"""
+    def __init__(self) -> None:
+        """
+        Create playground settings and playground itself.
+        Call greeting function.
+        Initialize scores, lines and level values.
+        Run main loop.
+        """
         self.ground_width = 10
         self.ground_height = 20
         self.is_game_on = True
-        self.greeting()
+        greeting()
         self.ground = [[' '] * self.ground_width for _ in range(self.ground_height)]
         self.lines = 0
         self.scores = 0
@@ -22,10 +34,8 @@ class Tetris:
         self.draw()
         self.start()
 
-    def greeting(self):
-        print("Welcome to tetris game!\n")
-
-    def draw(self):
+    def draw(self) -> None:
+        """Refresh playground and add new values in it"""
         self.ground = [[' '] * self.ground_width for _ in range(self.ground_height)]
 
         for y, line in enumerate(self.stack):
@@ -52,7 +62,12 @@ class Tetris:
             else:
                 print(f"|{''.join(line)}|")
 
-    def logic(self):
+    def logic(self) -> None:
+        """
+        Make the shapes move down.
+        Check collisions.
+        Check completed lines.
+        """
         # gravity
         self.shape.y += 1
 
@@ -93,29 +108,32 @@ class Tetris:
             self.lines += completed
             self.scores += 100 * self.level * multiply_rate[completed]
 
-    def is_game_over(self):
+    def is_game_over(self) -> bool:
         for col in range(3, 7):
             if (row := self.get_highest_stack_point(col)) <= 2 and (row != -1):
                 return True
+        return False
 
-    def is_touch_stack(self):
+    def is_touch_stack(self) -> bool:
         col_range = [i + self.shape.x for i in range(len(self.shape.current_shape[0]))]
         for col in col_range:
             if self.get_highest_stack_point(col) - self.get_lowest_shape_point(col) == 1:
                 return True
+        return False
 
-    def get_highest_stack_point(self, col):
+    def get_highest_stack_point(self, col: int) -> int:
         for row, line in enumerate(self.stack[self.shape.y:], self.shape.y):
             if line[col] != ' ':
                 return row
         return -1
 
-    def get_lowest_shape_point(self, col):
+    def get_lowest_shape_point(self, col: int) -> int:
         for i in range(len(self.shape.current_shape) - 1, -1, -1):
             if self.shape.current_shape[i][col-self.shape.x] != ' ':
                 return i + self.shape.y
 
-    def control(self):
+    def control(self) -> Union[True, None]:
+        """Check pressed buttons and change coordinates"""
         if msvcrt.kbhit():
             button = ord(msvcrt.getch())
             if button == ord('x'):
@@ -133,7 +151,8 @@ class Tetris:
         else:
             time.sleep(0.5)
 
-    def start(self):
+    def start(self) -> None:
+        """Main loop"""
         while self.is_game_on:
             if self.control():
                 break
